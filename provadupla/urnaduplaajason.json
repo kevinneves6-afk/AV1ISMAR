@@ -1,0 +1,16 @@
+[
+  {
+    "numero": "93",
+    "cargo": "Presidente",
+    "nome": "Candidato PDC",
+    "partido": "PDC",
+    "foto": "candidatos/93.jpg"
+  },
+  {
+    "numero": "94",
+    "cargo": "Presidente",
+    "nome": "Candidato PMauricio",
+    "partido": "PMauricio",
+    "foto": "candidatos/94.jpg"
+  }
+]

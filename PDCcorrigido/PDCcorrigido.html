@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Candidatos - PDC (93)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a5276;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #219150;
+        }
+
+        #btnFinalizar {
+            background-color: #2980b9;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        #btnFinalizar:hover {
+            background-color: #1f618d;
+        }
+
+        .error-msg {
+            color: #c0392b;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #ebedef;
+        }
+
+        img.foto-candidato {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .btn-remover {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-remover:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Registro de Candidatos - PDC (93)</h1>
+        
+        <section class="card">
+            <h2>Regras de Formatação dos Números:</h2>
+            <ul>
+                <li><strong>Presidente:</strong> 2 dígitos (Deve ser <code>93</code>) | Máximo: 1</li>
+                <li><strong>Governador(a):</strong> 2 dígitos (Deve ser <code>93</code>) | Máximo: 1</li>
+                <li><strong>Senador(a):</strong> 3 dígitos (Inicia com <code>93</code>) | Máximo: 2</li>
+                <li><strong>Deputado(a) Federal:</strong> 4 dígitos (Inicia com <code>93</code>) | Sem limite</li>
+                <li><strong>Deputado(a) Estadual:</strong> 5 dígitos (Inicia com <code>93</code>) | Sem limite</li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <h2>Indicar / Registrar Candidato</h2>
+            <form id="formCandidato">
+                <div class="form-group">
+                    <label for="filiadoSelect">Filiado:</label>
+                    <select id="filiadoSelect" required>
+                        <option value="">Selecione um filiado...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargoSelect">Cargo Eletivo:</label>
+                    <select id="cargoSelect" required>
+                        <option value="">Selecione o cargo...</option>
+                        <option value="Presidente">Presidente (1 vaga)</option>
+                        <option value="Governador">Governador(a) (1 vaga)</option>
+                        <option value="Senador">Senador(a) (2 vagas)</option>
+                        <option value="Deputado Federal">Deputado(a) Federal</option>
+                        <option value="Deputado Estadual">Deputado(a) Estadual</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="numeroInput">Número do Candidato:</label>
+                    <input type="text" id="numeroInput" placeholder="Ex: 93, 931, 9301..." required>
+                </div>
+
+                <button type="button" onclick="adicionarCandidato()">Adicionar à Chapa</button>
+            </form>
+            <div id="mensagemErro" class="error-msg"></div>
+        </section>
+
+        <section class="card">
+            <h2>Chapa Oficial Confirmada</h2>
+            <table id="tabelaChapa">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nome</th>
+                        <th>Cargo</th>
+                        <th>Número</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela">
+                    <!-- Candidatos adicionados aparecem aqui -->
+                </tbody>
+            </table>
+            
+            <button id="btnFinalizar" onclick="finalizarEBaixarJSON()">Finalizar e Baixar PDC.json</button>
+        </section>
+    </div>
+
+    <script>
+        const CODIGO_PARTIDO = "93";
+        const NOME_PARTIDO = "PDC";
+
+        // Base de dados de filiados do partido PDC (93)
+        const listaFiliados = [
+            { id: 1, nome: "Batman", partido: "PDC", numeroPartido: 93, foto: "https://i.ibb.co/VvzK81K/batman.png" },
+            { id: 2, nome: "Flash", partido: "PDC", numeroPartido: 93, foto: "https://i.ibb.co/3s68C72/flash.png" },
+            { id: 3, nome: "Superman", partido: "PDC", numeroPartido: 93, foto: "https://i.ibb.co/P44wM9c/superman.png" },
+            { id: 4, nome: "Mulher Maravilha", partido: "PDC", numeroPartido: 93, foto: "https://i.ibb.co/q9M2K6G/mulher-maravilha.png" },
+            { id: 5, nome: "Arqueiro Verde", partido: "PDC", numeroPartido: 93, foto: "https://i.ibb.co/mSpRcxm/arqueiro-verde.png" },
+            { id: 6, nome: "Lanterna Verde", partido: "PDC", numeroPartido: 93, foto: "https://i.ibb.co/4MvR29P/lanterna-verde.png" }
+        ];
+
+        let chapaOficial = [];
+
+        // Regras de vagas e tamanho do número para cada cargo
+        const REGRAS_CARGOS = {
+            "Presidente": { limite: 1, digitos: 2 },
+            "Governador": { limite: 1, digitos: 2 },
+            "Senador": { limite: 2, digitos: 3 },
+            "Deputado Federal": { limite: Infinity, digitos: 4 },
+            "Deputado Estadual": { limite: Infinity, digitos: 5 }
+        };
+
+        // Carregar filiados no <select> ao carregar a página
+        document.addEventListener("DOMContentLoaded", () => {
+            preencherSelectFiliados();
+        });
+
+        function preencherSelectFiliados() {
+            const select = document.getElementById('filiadoSelect');
+            select.innerHTML = '<option value="">Selecione um filiado...</option>';
+            
+            listaFiliados.forEach(filiado => {
+                const option = document.createElement('option');
+                option.value = filiado.id;
+                option.textContent = filiado.nome;
+                select.appendChild(option);
+            });
+        }
+
+        // Adicionar e validar candidato na chapa
+        function adicionarCandidato() {
+            ocultarErro();
+            
+            const filiadoId = document.getElementById('filiadoSelect').value;
+            const cargo = document.getElementById('cargoSelect').value;
+            const numero = document.getElementById('numeroInput').value.trim();
+
+            if (!filiadoId || !cargo || !numero) {
+                mostrarErro("Preencha todos os campos do formulário.");
+                return;
+            }
+
+            const filiado = listaFiliados.find(f => f.id == filiadoId);
+
+            // Validação 1: Candidatura Única
+            const jaIndicado = chapaOficial.some(c => c.id === filiado.id);
+            if (jaIndicado) {
+                mostrarErro(`O(a) filiado(a) ${filiado.nome} já foi indicado(a) para a chapa!`);
+                return;
+            }
+
+            // Validação 2: Limite de Vagas por Cargo
+            const regra = REGRAS_CARGOS[cargo];
+            const totalNoCargo = chapaOficial.filter(c => c.cargo === cargo).length;
+            if (totalNoCargo >= regra.limite) {
+                mostrarErro(`O cargo de ${cargo} já atingiu o limite de ${regra.limite} candidato(s).`);
+                return;
+            }
+
+            // Validação 3: Formato do número do partido (deve começar com 93)
+            if (!numero.startsWith(CODIGO_PARTIDO)) {
+                mostrarErro(`O número do candidato deve começar obrigatoriamente com o número do partido (${CODIGO_PARTIDO}).`);
+                return;
+            }
+
+            // Validação 4: Quantidade exata de dígitos por cargo
+            if (numero.length !== regra.digitos) {
+                mostrarErro(`Para o cargo de ${cargo}, o número deve conter exatamente ${regra.digitos} dígitos.`);
+                return;
+            }
+
+            // Validação 5: Número único na chapa
+            const numeroJaUsado = chapaOficial.some(c => c.numero === numero);
+            if (numeroJaUsado) {
+                mostrarErro(`O número ${numero} já está atribuído a outro candidato na chapa.`);
+                return;
+            }
+
+            // Adiciona candidato à chapa
+            chapaOficial.push({
+                id: filiado.id,
+                nome: filiado.nome,
+                cargo: cargo,
+                numero: numero,
+                foto: filiado.foto
+            });
+
+            atualizarTabelaChapa();
+            limparFormulario();
+        }
+
+        function atualizarTabelaChapa() {
+            const tbody = document.getElementById('corpoTabela');
+            tbody.innerHTML = '';
+
+            chapaOficial.forEach((candidato, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${candidato.foto}" alt="${candidato.nome}" class="foto-candidato"></td>
+                    <td>${candidato.nome}</td>
+                    <td>${candidato.cargo}</td>
+                    <td><strong>${candidato.numero}</strong></td>
+                    <td><button class="btn-remover" onclick="removerCandidato(${index})">Remover</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function removerCandidato(index) {
+            chapaOficial.splice(index, 1);
+            atualizarTabelaChapa();
+        }
+
+        function limparFormulario() {
+            document.getElementById('filiadoSelect').value = '';
+            document.getElementById('cargoSelect').value = '';
+            document.getElementById('numeroInput').value = '';
+        }
+
+        function mostrarErro(mensagem) {
+            document.getElementById('mensagemErro').textContent = mensagem;
+        }
+
+        function ocultarErro() {
+            document.getElementById('mensagemErro').textContent = '';
+        }
+
+        // Finalizar e disparar o download do arquivo PDC.json
+        function finalizarEBaixarJSON() {
+            if (chapaOficial.length === 0) {
+                mostrarErro("A chapa está vazia! Adicione pelo menos um candidato antes de finalizar.");
+                return;
+            }
+
+            // Formatação exigida: nome, numero, foto, cargo
+            const dadosFinais = chapaOficial.map(item => ({
+                nome: item.nome,
+                numero: item.numero,
+                foto: item.foto,
+                cargo: item.cargo
+            }));
+
+            const jsonData = JSON.stringify(dadosFinais, null, 2);
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'PDC.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

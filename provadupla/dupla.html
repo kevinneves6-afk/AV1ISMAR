@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urna Eletrônica - Simulação 2026</title>
+    <style>
+        :root {
+            --cor-urna: #d9d9d9;
+            --cor-tela: #cce3c1;
+            --cor-teclado: #222222;
+            --cor-botao-num: #111111;
+            --cor-branco: #ffffff;
+            --cor-corrige: #f05a28;
+            --cor-confirma: #00a651;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header-controle {
+            margin-bottom: 20px;
+        }
+
+        .btn-tse {
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-tse:hover {
+            background-color: #002244;
+        }
+
+        /* Estrutura da Urna */
+        .urna {
+            background-color: var(--cor-urna);
+            border: 2px solid #b2b2b2;
+            border-radius: 10px;
+            padding: 25px;
+            display: flex;
+            gap: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 850px;
+            box-sizing: border-box;
+        }
+
+        /* Tela LCD */
+        .tela {
+            background-color: var(--cor-tela);
+            border: 2px solid #777;
+            border-radius: 5px;
+            flex: 1;
+            height: 380px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .tela-topo {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cargo-titulo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .quadrados-numero {
+            display: flex;
+            gap: 5px;
+            margin-top: 15px;
+            align-items: center;
+            height: 45px;
+        }
+
+        .digito {
+            width: 30px;
+            height: 40px;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .digito.pisca {
+            animation: pisca 1s infinite;
+        }
+
+        @keyframes pisca {
+            0%, 100% { border-color: #000; }
+            50% { border-color: transparent; }
+        }
+
+        .dados-candidato {
+            margin-top: 15px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            min-height: 80px;
+        }
+
+        .foto-candidato {
+            width: 100px;
+            height: 120px;
+            border: 1px solid #000;
+            background-color: #fff;
+            object-fit: cover;
+        }
+
+        .tela-instrucoes {
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .mensagem-centro {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        .mensagem-fim {
+            font-size: 5rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        /* Teclado numérico */
+        .teclado {
+            background-color: var(--cor-teclado);
+            padding: 20px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 260px;
+        }
+
+        .teclado-topo {
+            color: #fff;
+            text-align: right;
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .teclado-linha {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-num {
+            background-color: var(--cor-botao-num);
+            color: white;
+            border: none;
+            width: 55px;
+            height: 45px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #000;
+        }
+
+        .btn-num:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #000;
+        }
+
+        .teclado-acoes {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-acao {
+            flex: 1;
+            height: 45px;
+            border: none;
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            border-radius: 3px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #000;
+        }
+
+        .btn-branco { background-color: var(--cor-branco); color: #000; }
+        .btn-corrige { background-color: var(--cor-corrige); color: #000; }
+        .btn-confirma { background-color: var(--cor-confirma); color: #000; height: 52px; align-self: flex-end; }
+    </style>
+</head>
+<body>
+
+    <div class="header-controle">
+        <button class="btn-tse" onclick="encerrarVotacaoEEnviarTSE()">Encerrar votação e enviar ao TSE</button>
+    </div>
+
+    <!-- Urna Eletrônica -->
+    <div class="urna">
+        
+        <!-- Tela LCD -->
+        <div class="tela" id="tela">
+            <div id="conteudo-voto" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="tela-topo">
+                    <div>
+                        <span>SEU VOTO PARA</span>
+                        <div class="cargo-titulo" id="lblCargo">Deputado Federal</div>
+                    </div>
+                    <img id="imgCandidato" class="foto-candidato" src="" alt="" style="display: none;">
+                </div>
+
+                <div class="quadrados-numero" id="containerDigitos"></div>
+
+                <div class="dados-candidato" id="dadosCandidato"></div>
+
+                <div class="tela-instrucoes" id="instrucoes">
+                    Aperte a tecla:<br>
+                    <strong>VERDE</strong> para CONFIRMAR<br>
+                    <strong>LARANJA</strong> para CORRIGIR
+                </div>
+            </div>
+        </div>
+
+        <!-- Teclado Numérico -->
+        <div class="teclado">
+            <div class="teclado-topo">JUSTIÇA ELEITORAL</div>
+            
+            <div class="teclado-linha">
+                <button class="btn-num" onclick="digitar('1')">1</button>
+                <button class="btn-num" onclick="digitar('2')">2</button>
+                <button class="btn-num" onclick="digitar('3')">3</button>
+            </div>
+            <div class="teclado-linha">
+                <button class="btn-num" onclick="digitar('4')">4</button>
+                <button class="btn-num" onclick="digitar('5')">5</button>
+                <button class="btn-num" onclick="digitar('6')">6</button>
+            </div>
+            <div class="teclado-linha">
+                <button class="btn-num" onclick="digitar('7')">7</button>
+                <button class="btn-num" onclick="digitar('8')">8</button>
+                <button class="btn-num" onclick="digitar('9')">9</button>
+            </div>
+            <div class="teclado-linha">
+                <button class="btn-num" onclick="digitar('0')">0</button>
+            </div>
+
+            <div class="teclado-acoes">
+                <button class="btn-acao btn-branco" onclick="votarBranco()">Branco</button>
+                <button class="btn-acao btn-corrige" onclick="corrigir()">Corrige</button>
+                <button class="btn-acao btn-confirma" onclick="confirmar()">Confirma</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Sistema de Áudio Sintentizado via Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function tocarSomTeclado() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function tocarSomCorrige() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function tocarSomFim() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
+            
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.7);
+        }
+
+        // Base de Candidatos com Personagens Solicitados
+        const candidatosBD = [
+            // Deputado Federal (4 dígitos)
+            { numero: "9401", nome: "Mônica", partido: "PMauricio (94)", cargo: "Deputado Federal", foto: "https://upload.wikimedia.org/wikipedia/pt/2/23/M%C3%B4nica_por_Mauricio_de_Sousa.png" },
+            { numero: "9301", nome: "Lanterna Verde", partido: "PDC (93)", cargo: "Deputado Federal", foto: "https://upload.wikimedia.org/wikipedia/en/a/a2/Green_Lantern_Hal_Jordan.png" },
+            
+            // Deputado Estadual (5 dígitos)
+            { numero: "94001", nome: "Magali", partido: "PMauricio (94)", cargo: "Deputado Estadual", foto: "https://upload.wikimedia.org/wikipedia/pt/e/ed/Magali_por_Mauricio_de_Sousa.png" },
+            { numero: "93001", nome: "Arqueiro Verde", partido: "PDC (93)", cargo: "Deputado Estadual", foto: "https://upload.wikimedia.org/wikipedia/en/b/b5/Green_Arrow_Green_Arrow_and_Black_Canary_Vol_1_1.png" },
+
+            // Senador 1ª Vaga (3 dígitos)
+            { numero: "941", nome: "Cebolinha", partido: "PMauricio (94)", cargo: "Senador (1ª Vaga)", foto: "https://upload.wikimedia.org/wikipedia/pt/f/f3/Cebolinha_por_Mauricio_de_Sousa.png" },
+            { numero: "931", nome: "Mulher Maravilha", partido: "PDC (93)", cargo: "Senador (1ª Vaga)", foto: "https://upload.wikimedia.org/wikipedia/en/9/93/Wonder_Woman_Cast.png" },
+
+            // Senador 2ª Vaga (3 dígitos)
+            { numero: "942", nome: "Cascão", partido: "PMauricio (94)", cargo: "Senador (2ª Vaga)", foto: "https://upload.wikimedia.org/wikipedia/pt/d/d4/Casc%C3%A3o_por_Mauricio_de_Sousa.png" },
+            { numero: "932", nome: "Superman", partido: "PDC (93)", cargo: "Senador (2ª Vaga)", foto: "https://upload.wikimedia.org/wikipedia/en/3/35/Superman_Action_Comics_1050.png" },
+
+            // Governador (2 dígitos)
+            { numero: "94", nome: "Franjinha", partido: "PMauricio (94)", cargo: "Governador", foto: "https://upload.wikimedia.org/wikipedia/pt/6/67/Franjinha_turma_da_monica.png" },
+            
+            // Presidente (2 dígitos)
+            { numero: "93", nome: "Batman", partido: "PDC (93)", cargo: "Presidente", foto: "https://upload.wikimedia.org/wikipedia/en/1/17/Batman-DC-Comics.png" }
+        ];
+
+        // Ordem oficial dos cargos 2026
+        const cargos2026 = [
+            { nome: "Deputado Federal", digitos: 4 },
+            { nome: "Deputado Estadual", digitos: 5 },
+            { nome: "Senador (1ª Vaga)", digitos: 3 },
+            { nome: "Senador (2ª Vaga)", digitos: 3 },
+            { nome: "Governador", digitos: 2 },
+            { nome: "Presidente", digitos: 2 }
+        ];
+
+        // Estado do fluxo da urna
+        let etapaAtual = 0;
+        let numeroDigitado = "";
+        let votoEmBranco = false;
+        let votacaoBloqueada = false;
+
+        const memoriaVotosEleitores = []; 
+        let votoEleitorAtual = {}; 
+
+        window.onload = () => {
+            iniciarNovoEleitor();
+        };
+
+        function iniciarNovoEleitor() {
+            etapaAtual = 0;
+            votoEleitorAtual = {};
+            votacaoBloqueada = false;
+            iniciarEtapa();
+        }
+
+        function iniciarEtapa() {
+            numeroDigitado = "";
+            votoEmBranco = false;
+            
+            const cargo = cargos2026[etapaAtual];
+            document.getElementById('lblCargo').innerText = cargo.nome;
+            document.getElementById('dadosCandidato').innerHTML = "";
+            document.getElementById('imgCandidato').style.display = "none";
+            document.getElementById('imgCandidato').src = "";
+            
+            renderizarQuadradosDigitos(cargo.digitos);
+        }
+
+        function renderizarQuadradosDigitos(qtd) {
+            const container = document.getElementById('containerDigitos');
+            container.style.display = "flex";
+            container.innerHTML = "";
+
+            for (let i = 0; i < qtd; i++) {
+                const div = document.createElement('div');
+                div.className = i === 0 ? 'digito pisca' : 'digito';
+                div.id = `digito-${i}`;
+                container.appendChild(div);
+            }
+        }
+
+        function digitar(n) {
+            if (votacaoBloqueada || votoEmBranco) return;
+            tocarSomTeclado();
+
+            const cargo = cargos2026[etapaAtual];
+            if (numeroDigitado.length < cargo.digitos) {
+                numeroDigitado += n;
+                
+                const digitoElem = document.getElementById(`digito-${numeroDigitado.length - 1}`);
+                if (digitoElem) {
+                    digitoElem.innerText = n;
+                    digitoElem.classList.remove('pisca');
+                }
+
+                if (numeroDigitado.length < cargo.digitos) {
+                    const proximoElem = document.getElementById(`digito-${numeroDigitado.length}`);
+                    if (proximoElem) proximoElem.classList.add('pisca');
+                }
+
+                if (numeroDigitado.length === cargo.digitos) {
+                    verificarCandidatoDigitado(numeroDigitado, cargo.nome);
+                }
+            }
+        }
+
+        function verificarCandidatoDigitado(numero, cargoNome) {
+            const candidatoEncontrado = candidatosBD.find(c => c.numero === numero && c.cargo === cargoNome);
+
+            if (candidatoEncontrado) {
+                document.getElementById('dadosCandidato').innerHTML = `
+                    <strong>Nome:</strong> ${candidatoEncontrado.nome}<br>
+                    <strong>Partido:</strong> ${candidatoEncontrado.partido}
+                `;
+                document.getElementById('imgCandidato').src = candidatoEncontrado.foto;
+                document.getElementById('imgCandidato').style.display = "block";
+            } else {
+                document.getElementById('dadosCandidato').innerHTML = `
+                    <div style="font-size: 1.4rem; font-weight: bold; margin-top: 10px;">VOTO NULO</div>
+                    <span style="font-size: 0.8rem;">Número não correspondente a nenhum candidato</span>
+                `;
+            }
+        }
+
+        function votarBranco() {
+            if (votacaoBloqueada) return;
+            tocarSomTeclado();
+
+            if (numeroDigitado === "") {
+                votoEmBranco = true;
+                document.getElementById('containerDigitos').style.display = "none";
+                document.getElementById('dadosCandidato').innerHTML = `
+                    <div style="font-size: 1.5rem; font-weight: bold; text-align: center; margin-top: 15px;">VOTO EM BRANCO</div>
+                `;
+            } else {
+                alert("Para votar em BRANCO, o campo de número deve estar vazio. Aperte CORRIGE primeiro.");
+            }
+        }
+
+        function corrigir() {
+            if (votacaoBloqueada) return;
+            tocarSomCorrige();
+            iniciarEtapa();
+        }
+
+        function confirmar() {
+            if (votacaoBloqueada) return;
+
+            const cargo = cargos2026[etapaAtual];
+            let votoValidoParaRegistrar = false;
+
+            if (votoEmBranco) {
+                votoValidoParaRegistrar = true;
+                votoEleitorAtual[cargo.nome] = { numero: "BRANCO", tipo: "BRANCO" };
+            } else if (numeroDigitado.length === cargo.digitos) {
+                votoValidoParaRegistrar = true;
+                const cand = candidatosBD.find(c => c.numero === numeroDigitado && c.cargo === cargo.nome);
+                votoEleitorAtual[cargo.nome] = { 
+                    numero: numeroDigitado, 
+                    candidato: cand ? cand.nome : "NULO",
+                    tipo: cand ? "VÁLIDO" : "NULO"
+                };
+            } else {
+                alert(`Por favor, insira os ${cargo.digitos} dígitos do cargo de ${cargo.nome} ou vote em BRANCO.`);
+                return;
+            }
+
+            if (votoValidoParaRegistrar) {
+                tocarSomTeclado();
+                etapaAtual++;
+
+                if (etapaAtual < cargos2026.length) {
+                    iniciarEtapa();
+                } else {
+                    finalizarVotoEleitor();
+                }
+            }
+        }
+
+        function finalizarVotoEleitor() {
+            votacaoBloqueada = true;
+            tocarSomFim();
+
+            memoriaVotosEleitores.push(votoEleitorAtual);
+
+            const tela = document.getElementById('tela');
+            tela.innerHTML = `
+                <div class="mensagem-fim">F I M</div>
+            `;
+
+            setTimeout(() => {
+                restaurarEstruturaTela();
+                iniciarNovoEleitor();
+            }, 3000);
+        }
+
+        function restaurarEstruturaTela() {
+            const tela = document.getElementById('tela');
+            tela.innerHTML = `
+                <div id="conteudo-voto" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div class="tela-topo">
+                        <div>
+                            <span>SEU VOTO PARA</span>
+                            <div class="cargo-titulo" id="lblCargo">---</div>
+                        </div>
+                        <img id="imgCandidato" class="foto-candidato" src="" alt="" style="display: none;">
+                    </div>
+
+                    <div class="quadrados-numero" id="containerDigitos"></div>
+
+                    <div class="dados-candidato" id="dadosCandidato"></div>
+
+                    <div class="tela-instrucoes" id="instrucoes">
+                        Aperte a tecla:<br>
+                        <strong>VERDE</strong> para CONFIRMAR<br>
+                        <strong>LARANJA</strong> para CORRIGIR
+                    </div>
+                </div>
+            `;
+        }
+
+        function encerrarVotacaoEEnviarTSE() {
+            if (memoriaVotosEleitores.length === 0) {
+                alert("Nenhum voto foi registrado nesta urna ainda!");
+                return;
+            }
+
+            if (confirm(`Deseja encerrar a eleição? Total de eleitores que votaram: ${memoriaVotosEleitores.length}`)) {
+                votacaoBloqueada = true;
+                tocarSomFim();
+
+                // Download automático do Boletim de Urna JSON
+                const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(memoriaVotosEleitores, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", jsonStr);
+                downloadAnchor.setAttribute("download", "boletimDeUrna.json");
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+
+                document.getElementById('tela').innerHTML = `
+                    <div class="mensagem-centro">
+                        VOTAÇÃO ENCERRADA<br>
+                        <span style="font-size: 1rem; margin-top: 10px; font-weight: normal;">Boletim de Urna baixado e enviado ao TSE com sucesso.</span>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
