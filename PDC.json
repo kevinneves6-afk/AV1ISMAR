@@ -1,0 +1,32 @@
+[
+  {
+    "nome": "Lanterna Verde",
+    "numero": "9301",
+    "foto": "https://i.ibb.co/4MvR29P/lanterna-verde.png",
+    "cargo": "Deputado Federal"
+  },
+  {
+    "nome": "Batman",
+    "numero": "93",
+    "foto": "https://i.ibb.co/VvzK81K/batman.png",
+    "cargo": "Presidente"
+  },
+  {
+    "nome": "Arqueiro Verde",
+    "numero": "93001",
+    "foto": "https://i.ibb.co/mSpRcxm/arqueiro-verde.png",
+    "cargo": "Deputado Estadual"
+  },
+  {
+    "nome": "Mulher Maravilha",
+    "numero": "931",
+    "foto": "https://i.ibb.co/q9M2K6G/mulher-maravilha.png",
+    "cargo": "Senador"
+  },
+  {
+    "nome": "Superman",
+    "numero": "932",
+    "foto": "https://i.ibb.co/P44wM9c/superman.png",
+    "cargo": "Senador"
+  }
+]
